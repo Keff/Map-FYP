@@ -260,10 +260,10 @@ public class SQLiteAdapter {
 		int cursor_no = 0;
 		List<String> lst = new ArrayList<String>();
 		cursor.moveToFirst();
-				
+
 		while (!(cursor.isAfterLast())) 
 		{
-			if (cursor_no == 0) {
+			if (cursor_no == 0) {				
 				lst.add(cursor.getString(index_CONTENT));
 				cursor_no++;
 			} else if (cursor_no > 0 && !(lst.get(cursor_no-1).equals(cursor.getString(index_CONTENT)))) {
@@ -273,7 +273,7 @@ public class SQLiteAdapter {
 			
 			cursor.moveToNext();
 		}
-		
+
 		cursor.close();
 		return lst;
 	}
@@ -294,7 +294,7 @@ public class SQLiteAdapter {
 		} else if (col.equals("Country -> City")) {
 			sortOrder = "country ASC";
 			cursor = sqLiteDatabase.query(MYDATABASE_TABLE,
-					columns, sales_country + "=?", new String[]{ret}, null, null, sortOrder);
+					columns, sales_city + "=?", new String[]{ret}, null, null, sortOrder);
 		} else if (col.equals("City -> Town")) {
 			sortOrder = "city ASC";
 			cursor = sqLiteDatabase.query(MYDATABASE_TABLE,
@@ -328,7 +328,7 @@ public class SQLiteAdapter {
 					cursor.moveToNext()) {
 				result.add(cursor.getString(itemname) + ", " + Integer.parseInt(cursor.getString(quantity)) + ", "
 						+ df.format(Double.parseDouble(cursor.getString(price))) + ", " + cursor.getString(month) + ", "
-						+ cursor.getString(quarter) + " " + cursor.getString(year) + ", " + cursor.getString(town) + ", "
+						+ cursor.getString(quarter) + ", " + cursor.getString(year) + ", " + cursor.getString(town) + ", "
 						+ cursor.getString(country));	
 			}
 		} else if (col.equals("City -> Town")) {

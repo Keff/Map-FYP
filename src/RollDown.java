@@ -58,29 +58,29 @@ public class RollDown extends Activity {
 				TextView tvQuarter = new TextView(this);
 				tvQuarter.setTypeface(null, Typeface.BOLD_ITALIC);
 				
-				if (col.get(month).equals("(1) January"))
+				if (col.get(month).equals("1 - January"))
 					tvQuarter.append("January");
-				else if (col.get(month).equals("(2) February"))
+				else if (col.get(month).equals("2 - February"))
 					tvQuarter.append("February");
-				else if (col.get(month).equals("(3) March"))
+				else if (col.get(month).equals("3 - March"))
 					tvQuarter.append("March");
-				else if (col.get(month).equals("(4) April"))
+				else if (col.get(month).equals("4 - April"))
 					tvQuarter.append("April");
-				else if (col.get(month).equals("(5) May"))
+				else if (col.get(month).equals("5 - May"))
 					tvQuarter.append("May");
-				else if (col.get(month).equals("(6) June"))
+				else if (col.get(month).equals("6 - June"))
 					tvQuarter.append("June");
-				else if (col.get(month).equals("(7) July"))
+				else if (col.get(month).equals("7 - July"))
 					tvQuarter.append("July");
-				else if (col.get(month).equals("(8) August"))
+				else if (col.get(month).equals("8 - August"))
 					tvQuarter.append("August");
-				else if (col.get(month).equals("(9) September"))
+				else if (col.get(month).equals("9 - September"))
 					tvQuarter.append("September");
-				else if (col.get(month).equals("(10) October"))
+				else if (col.get(month).equals("10 - October"))
 					tvQuarter.append("October");
-				else if (col.get(month).equals("(11) November"))
+				else if (col.get(month).equals("11 - November"))
 					tvQuarter.append("November");
-				else if (col.get(month).equals("(12) December"))
+				else if (col.get(month).equals("12 - December"))
 					tvQuarter.append("December");
 				
 				tvsMonth.add(tvQuarter);
@@ -92,7 +92,7 @@ public class RollDown extends Activity {
 				
 				for (int e = 0; e < result.size(); e++) {
 					TextView tvResult = new TextView(this);
-					tvResult.append((e + 1) + " " + result.get(e));
+					tvResult.append((e + 1) + ". " + result.get(e));
 					if (e == result.size()-1)
 						tvResult.append("\n");
 					tvResult.setTextSize(14);
@@ -126,7 +126,7 @@ public class RollDown extends Activity {
 				
 				for (int e = 0; e < result.size(); e++) {
 					TextView tvResult = new TextView(this);
-					tvResult.append((e + 1) + " " + result.get(e));
+					tvResult.append((e + 1) + ". " + result.get(e));
 					if (e == result.size()-1)
 						tvResult.append("\n");
 					tvResult.setTextSize(14);
@@ -160,7 +160,7 @@ public class RollDown extends Activity {
 				
 				for (int f = 0; f < result.size(); f++) {
 					TextView tvResult = new TextView(this);
-					tvResult.append((f + 1) + " " + result.get(f));
+					tvResult.append((f + 1) + ". " + result.get(f));
 					if (f == result.size()-1)
 						tvResult.append("\n");
 					tvResult.setTextSize(14);

@@ -76,7 +76,7 @@ public class RollUp extends Activity {
 				
 				for (int e = 0; e < result.size(); e++) {
 					TextView tvResult = new TextView(this);
-					tvResult.append((e + 1) + " " + result.get(e));
+					tvResult.append((e + 1) + ". " + result.get(e));
 					if (e == result.size()-1)
 						tvResult.append("\n");
 					tvResult.setTextSize(14);
@@ -110,7 +110,7 @@ public class RollUp extends Activity {
 				
 				for (int e = 0; e < result.size(); e++) {
 					TextView tvResult = new TextView(this);
-					tvResult.append((e + 1) + " " + result.get(e));
+					tvResult.append((e + 1) + ". " + result.get(e));
 					if (e == result.size()-1)
 						tvResult.append("\n");
 					tvResult.setTextSize(14);
@@ -144,7 +144,7 @@ public class RollUp extends Activity {
 				
 				for (int f = 0; f < result.size(); f++) {
 					TextView tvResult = new TextView(this);
-					tvResult.append((f + 1) + " " + result.get(f));
+					tvResult.append((f + 1) + ". " + result.get(f));
 					if (f == result.size()-1)
 						tvResult.append("\n");
 					tvResult.setTextSize(14);
