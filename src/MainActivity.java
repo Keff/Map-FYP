@@ -207,7 +207,8 @@ public class MainActivity extends Activity {
 				String selectedOlapOperation = spOlapOperation.getSelectedItem().toString();
 				String selectedColumn = null;
 				
-				if (!selectedOlapOperation.equals(olapOperation[0].toString()))
+				if (!(selectedOlapOperation.equals(olapOperation[0].toString()) || 
+						selectedOlapOperation.equals(olapOperation[3].toString())))
 					selectedColumn = spColumn.getSelectedItem().toString();
 
 				// Roll Up
@@ -218,6 +219,11 @@ public class MainActivity extends Activity {
 					finish();
 				} else if (selectedOlapOperation.equals(olapOperation[2].toString())) {
 					Intent i = new Intent(MainActivity.this, RollDown.class);	
+					i.putExtra("column", selectedColumn);
+					startActivity(i);
+					finish();
+				} else if (selectedOlapOperation.equals(olapOperation[3].toString())) {
+					Intent i = new Intent(MainActivity.this, Slice.class);	
 					i.putExtra("column", selectedColumn);
 					startActivity(i);
 					finish();

@@ -52,43 +52,57 @@ public class RollDown extends Activity {
 			
 			List<TextView> tvsMonth = new ArrayList<TextView>();
 			List<String> result = new ArrayList<String>();
+			String mth = null;
 
 			mySQLiteAdapter.openToRead();
 			for (int month = 0; month < col.size(); month++) {
 				TextView tvQuarter = new TextView(this);
 				tvQuarter.setTypeface(null, Typeface.BOLD_ITALIC);
 				
-				if (col.get(month).equals("1 - January"))
+				if (col.get(month).equals("1")) {
 					tvQuarter.append("January");
-				else if (col.get(month).equals("2 - February"))
+					mth = "January";
+				} else if (col.get(month).equals("2")) {
 					tvQuarter.append("February");
-				else if (col.get(month).equals("3 - March"))
+					mth = "February";
+				} else if (col.get(month).equals("3")) {
 					tvQuarter.append("March");
-				else if (col.get(month).equals("4 - April"))
+					mth = "March";
+				} else if (col.get(month).equals("4")) {
 					tvQuarter.append("April");
-				else if (col.get(month).equals("5 - May"))
+					mth = "April";
+				} else if (col.get(month).equals("5")) {
 					tvQuarter.append("May");
-				else if (col.get(month).equals("6 - June"))
+					mth = "May";
+				} else if (col.get(month).equals("6")) {
 					tvQuarter.append("June");
-				else if (col.get(month).equals("7 - July"))
+					mth = "June";
+				} else if (col.get(month).equals("7")) {
 					tvQuarter.append("July");
-				else if (col.get(month).equals("8 - August"))
+					mth = "July";
+				} else if (col.get(month).equals("8")) {
 					tvQuarter.append("August");
-				else if (col.get(month).equals("9 - September"))
+					mth = "August";
+				} else if (col.get(month).equals("9")) {
 					tvQuarter.append("September");
-				else if (col.get(month).equals("10 - October"))
+					mth = "September";
+				} else if (col.get(month).equals("10")) {
 					tvQuarter.append("October");
-				else if (col.get(month).equals("11 - November"))
+					mth = "October";
+				} else if (col.get(month).equals("11")) {
 					tvQuarter.append("November");
-				else if (col.get(month).equals("12 - December"))
+					mth = "November";
+				} else if (col.get(month).equals("12")) {
 					tvQuarter.append("December");
+					mth = "December";
+				}
 				
 				tvsMonth.add(tvQuarter);
 				ll.addView(tvsMonth.get(month));
 
 				// finally I get it, linear layout cannot add same list with same value 
 				List<TextView> tvsResult = new ArrayList<TextView>();
-				result = mySQLiteAdapter.getRollDown_Data(selectedColumn, col.get(month));
+				result = mySQLiteAdapter.getRollDown_Data(selectedColumn, mth);
 				
 				for (int e = 0; e < result.size(); e++) {
 					TextView tvResult = new TextView(this);

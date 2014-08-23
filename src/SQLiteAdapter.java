@@ -95,10 +95,10 @@ public class SQLiteAdapter {
 		// TODO Auto-generated method stub
 		String[] columns = new String[] {itemName};
 
-	 /* .query(String table, String[] columns, String selection, String[] selectionArrays, 
-	 * Group By, String having, String order);
-	 * 
-	 */
+		/* .query(String table, String[] columns, String selection, String[] selectionArrays, 
+		 * Group By, String having, String order);
+		 * 
+		 */
 		Cursor cursor = sqLiteDatabase.query(MYDATABASE_TABLE, 
 				columns, null, null, null, null, null);
 
@@ -118,7 +118,7 @@ public class SQLiteAdapter {
 		String[] columns = null;
 		String sortOrder = null;
 		int index_CONTENT = 0;
-		
+
 		if (col.equals("Month -> Quarter")) {
 			columns = new String[] {quarter_of_sales};
 			sortOrder = "quarter ASC";
@@ -129,7 +129,7 @@ public class SQLiteAdapter {
 			columns = new String[] {sales_country};
 			sortOrder = "country ASC";
 		}
-		
+
 		Cursor cursor = sqLiteDatabase.query(MYDATABASE_TABLE, 
 				columns, null, null, null, null, sortOrder);
 
@@ -139,11 +139,11 @@ public class SQLiteAdapter {
 			index_CONTENT = cursor.getColumnIndex(sales_city);
 		else if (col.equals("City -> Country"))
 			index_CONTENT = cursor.getColumnIndex(sales_country);
-		
+
 		int cursor_no = 0;
 		List<String> lst = new ArrayList<String>();
 		cursor.moveToFirst();
-				
+
 		while (!(cursor.isAfterLast())) 
 		{
 			if (cursor_no == 0) {
@@ -153,14 +153,14 @@ public class SQLiteAdapter {
 				lst.add(cursor.getString(index_CONTENT));
 				cursor_no++;
 			}
-			
+
 			cursor.moveToNext();
 		}
 		
 		cursor.close();
 		return lst;
 	}
-	
+
 	/*	roll up operation - Part 2
 	 *	retrieve the whole rows for the selected column
 	 */
@@ -169,7 +169,7 @@ public class SQLiteAdapter {
 				quarter_of_sales, year_of_sales, sales_town, sales_city, sales_country};
 		String sortOrder = null;
 		Cursor cursor = null;
-		
+
 		if (col.equals("Month -> Quarter")) {
 			sortOrder = "month ASC";
 			cursor = sqLiteDatabase.query(MYDATABASE_TABLE,
@@ -227,7 +227,7 @@ public class SQLiteAdapter {
 		cursor.close();
 		return result;
 	}
-	
+
 	/* roll down operation - Part 1
 	 * only retrieve the column name that already rolled down 
 	 */
@@ -235,7 +235,7 @@ public class SQLiteAdapter {
 		String[] columns = null;
 		String sortOrder = null;
 		int index_CONTENT = 0;
-		
+
 		if (col.equals("Quarter -> Month")) {
 			columns = new String[] {month_of_sales};
 			sortOrder = "month ASC";
@@ -246,7 +246,7 @@ public class SQLiteAdapter {
 			columns = new String[] {sales_town};
 			sortOrder = "town ASC";
 		}
-		
+
 		Cursor cursor = sqLiteDatabase.query(MYDATABASE_TABLE, 
 				columns, null, null, null, null, sortOrder);
 
@@ -256,13 +256,12 @@ public class SQLiteAdapter {
 			index_CONTENT = cursor.getColumnIndex(sales_city);
 		else if (col.equals("City -> Town"))
 			index_CONTENT = cursor.getColumnIndex(sales_town);
-		
+
 		int cursor_no = 0;
 		List<String> lst = new ArrayList<String>();
 		cursor.moveToFirst();
 
-		while (!(cursor.isAfterLast())) 
-		{
+		while (!(cursor.isAfterLast())) {
 			if (cursor_no == 0) {				
 				lst.add(cursor.getString(index_CONTENT));
 				cursor_no++;
@@ -270,14 +269,76 @@ public class SQLiteAdapter {
 				lst.add(cursor.getString(index_CONTENT));
 				cursor_no++;
 			}
-			
+
 			cursor.moveToNext();
+		}
+
+		if (col.equals("Quarter -> Month")) {
+			int[] mth = new int[lst.size()];
+			
+			for (int i = 0; i < lst.size(); i++) {
+				if (lst.get(i).equals("January"))
+					mth[i] = 1;
+				else if (lst.get(i).equals("February"))
+					mth[i] = 2;
+				else if (lst.get(i).equals("March"))
+					mth[i] = 3;
+				else if (lst.get(i).equals("April"))
+					mth[i] = 4;
+				else if (lst.get(i).equals("May"))
+					mth[i] = 5;
+				else if (lst.get(i).equals("June"))
+					mth[i] = 6;
+				else if (lst.get(i).equals("July"))
+					mth[i] = 7;
+				else if (lst.get(i).equals("August"))
+					mth[i] = 8;
+				else if (lst.get(i).equals("September"))
+					mth[i] = 9;
+				else if (lst.get(i).equals("October"))
+					mth[i] = 10;
+				else if (lst.get(i).equals("November"))
+					mth[i] = 11;
+				else if (lst.get(i).equals("December"))
+					mth[i] = 12;
+			}
+
+			int temp = 0, temp2 = 0, counter = 0;
+
+			for (int j = 0; j < mth.length; j++) {
+				counter = 0;
+				temp = mth[j];
+
+				if (j > 0) {
+					while (j-counter != 0) {
+						counter++;
+						temp2 = mth[j-counter];
+
+						if (counter == 1) {
+							if (temp < temp2) {
+								mth[j-counter] = temp;
+								mth[j] = temp2;
+							}
+						} else {
+							if (temp < temp2) {
+								mth[j-counter] = temp;
+								mth[j-counter+1] = temp2;
+							}
+						}
+					}
+				}
+			}
+			
+			lst.clear();
+			for (int k = 0; k < mth.length; k++) {
+				lst.add(String.valueOf(mth[k]));
+			}
 		}
 
 		cursor.close();
 		return lst;
 	}
-	
+
 	/*	roll down operation - Part 2
 	 *	retrieve the whole rows for the selected column
 	 */
@@ -286,7 +347,7 @@ public class SQLiteAdapter {
 				quarter_of_sales, year_of_sales, sales_town, sales_city, sales_country};
 		String sortOrder = null;
 		Cursor cursor = null;
-		
+
 		if (col.equals("Quarter -> Month")) {
 			sortOrder = "quarter ASC";
 			cursor = sqLiteDatabase.query(MYDATABASE_TABLE,
@@ -344,7 +405,7 @@ public class SQLiteAdapter {
 		cursor.close();
 		return result;
 	}
-	
+
 	public class SQLiteHelper extends SQLiteOpenHelper {
 
 		public SQLiteHelper(Context context, String name,
