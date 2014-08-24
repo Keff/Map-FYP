@@ -157,6 +157,24 @@ public class SQLiteAdapter {
 			cursor.moveToNext();
 		}
 		
+		if (col.equals("Month -> Quarter")) {
+			for (int i = 0; i < lst.size(); i++) {
+				if (lst.get(i).equals("Q1")) {
+					lst.remove(i);
+					lst.add(i, "Quarter 1");
+				} else if (lst.get(i).equals("Q2")) {
+					lst.remove(i);
+					lst.add(i, "Quarter 2");
+				} else if (lst.get(i).equals("Q3")) {
+					lst.remove(i);
+					lst.add(i, "Quarter 3");
+				} else if (lst.get(i).equals("Q4")) {
+					lst.remove(i);
+					lst.add(i, "Quarter 4");
+				}
+			}
+		}
+		
 		cursor.close();
 		return lst;
 	}
@@ -164,7 +182,7 @@ public class SQLiteAdapter {
 	/*	roll up operation - Part 2
 	 *	retrieve the whole rows for the selected column
 	 */
-	public List<String> getRollUp_Data(String col, String ret) {
+	public List<List<String>> getRollUp_Data(String col, String ret) {
 		String[] columns = new String[] {itemName, itemQuantity, itemPrice, month_of_sales,
 				quarter_of_sales, year_of_sales, sales_town, sales_city, sales_country};
 		String sortOrder = null;
@@ -172,6 +190,16 @@ public class SQLiteAdapter {
 
 		if (col.equals("Month -> Quarter")) {
 			sortOrder = "month ASC";
+			
+			if (ret.equals("Quarter 1"))
+				ret = "Q1";
+			else if (ret.equals("Quarter 2"))
+				ret = "Q2";
+			else if (ret.equals("Quarter 3"))
+				ret = "Q3";
+			else if (ret.equals("Quarter 4"))
+				ret = "Q4";
+			
 			cursor = sqLiteDatabase.query(MYDATABASE_TABLE,
 					columns, quarter_of_sales + "=?", new String[]{ret}, null, null, sortOrder);
 		} else if (col.equals("Town -> City")) {
@@ -194,17 +222,61 @@ public class SQLiteAdapter {
 		int city = cursor.getColumnIndex(sales_city);
 		int country = cursor.getColumnIndex(sales_country);
 
+		List<List<String>> twoList = new ArrayList<List<String>>();
 		List<String> result = new ArrayList<String>();
-
+		List<String> quarter_result = new ArrayList<String>();
+		
 		DecimalFormat df = new DecimalFormat("0.00");
-
+		int q1 = 0, q2 = 0, q3 = 0, q4 = 0;
+		boolean Q1 = false, Q2 = false, Q3 = false, Q4 = false;
+		
 		if (col.equals("Month -> Quarter")) {
 			for (cursor.moveToFirst(); !(cursor.isAfterLast());
 					cursor.moveToNext()) {
+				if (cursor.getString(quarter).equals("Q1")) {
+					Q1 = true;
+					q1 += Integer.parseInt(cursor.getString(quantity));
+					
+				} else if (cursor.getString(quarter).equals("Q2")) {
+					Q2 = true;
+					q2 += Integer.parseInt(cursor.getString(quantity));	
+					
+				} else if (cursor.getString(quarter).equals("Q3")) {
+					Q3 = true;
+					q3 += Integer.parseInt(cursor.getString(quantity));
+					
+				} else if (cursor.getString(quarter).equals("Q4")) {
+					Q4 = true;
+					q4 += Integer.parseInt(cursor.getString(quantity));
+					
+				}
+				
+				if (Q1 && (Q2 || Q3 || Q4) || (Q1 && cursor.isLast())) {
+					quarter_result.add(cursor.getString(itemname) + ", " + q1);
+					
+					Q1 = false;
+				}
+				else if (Q2 && (Q3 || Q4) || (Q2 && cursor.isLast())) {
+					quarter_result.add(cursor.getString(itemname) + ", " + q2);
+					
+					Q2 = false;
+				}
+				else if (Q3 && Q4 || (Q3 && cursor.isLast())) {
+					quarter_result.add(cursor.getString(itemname) + ", " + q3);
+					
+					Q3 = false;
+				}
+				else if (Q4 && cursor.isLast() || (Q2 && cursor.isLast())) {
+					quarter_result.add(cursor.getString(itemname) + ", " + q4);
+				}
+				
 				result.add(cursor.getString(itemname) + ", " + Integer.parseInt(cursor.getString(quantity)) + ", "
 						+ df.format(Double.parseDouble(cursor.getString(price))) + ", " + cursor.getString(month) + ", "
 						+ cursor.getString(year) + ", " + cursor.getString(town) + ", "
-						+ cursor.getString(city) + ", " + cursor.getString(country));
+						+ cursor.getString(city) + ", " + cursor.getString(country) + '\n');
+				
+				twoList.add(quarter_result);
+				twoList.add(result);
 			}
 		} else if (col.equals("Town -> City")) {
 			for (cursor.moveToFirst(); !(cursor.isAfterLast());
@@ -212,7 +284,9 @@ public class SQLiteAdapter {
 				result.add(cursor.getString(itemname) + ", " + Integer.parseInt(cursor.getString(quantity)) + ", "
 						+ df.format(Double.parseDouble(cursor.getString(price))) + ", " + cursor.getString(month) + ", "
 						+ cursor.getString(quarter) + " " + cursor.getString(year) + ", " + cursor.getString(town) + ", "
-						+ cursor.getString(country));	
+						+ cursor.getString(country));
+				
+				twoList.add(result);
 			}
 		} else if (col.equals("City -> Country")) {
 			for (cursor.moveToFirst(); !(cursor.isAfterLast());
@@ -221,11 +295,13 @@ public class SQLiteAdapter {
 						+ df.format(Double.parseDouble(cursor.getString(price))) + ", " + cursor.getString(month) + ", "
 						+ cursor.getString(quarter) + " " + cursor.getString(year) + ", " + cursor.getString(town) + ", "
 						+ cursor.getString(city));
+				
+				twoList.add(result);
 			}
 		}
 
 		cursor.close();
-		return result;
+		return twoList;
 	}
 
 	/* roll down operation - Part 1
