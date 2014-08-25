@@ -1,6 +1,5 @@
 package com.mad.fyp.tescoolap;
 
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,7 +13,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class SQLiteAdapter {
 	public static final String MYDATABASE_NAME = "tesco.db";
 	public static final String MYDATABASE_TABLE = "tesco_olap_table";
-	public static final int MYDATABASE_VERSION = 1;
+	public static final int MYDATABASE_VERSION = 2;
 
 	// database column
 	public static final String itemName = "name";
@@ -30,7 +29,7 @@ public class SQLiteAdapter {
 	private static final String SCRIPT_CREATE_DATABASE = "create table "
 			+ MYDATABASE_TABLE + " (id INTEGER PRIMARY KEY AUTOINCREMENT, "
 			+ itemName + " text, " + itemQuantity + " int, "
-			+ itemPrice + " double, " + month_of_sales + " text, "
+			+ itemPrice + " text, " + month_of_sales + " text, "
 			+ quarter_of_sales + " text, " + year_of_sales + " int, "
 			+ sales_town + " text, " + sales_city + " text, "
 			+ sales_country + " text );"; 
@@ -67,7 +66,7 @@ public class SQLiteAdapter {
 		sqLiteHelper.close();
 	}
 
-	public long insert(String name, int quantity, double price, String month, 
+	public long insert(String name, int quantity, String price, String month, 
 			String quarter, int year, String town, String city, String country) {
 		// TODO Auto-generated method stub
 		ContentValues contentValues = new ContentValues();
@@ -111,21 +110,21 @@ public class SQLiteAdapter {
 		return count;
 	}
 
-	/* roll up operation - Part 1
-	 * only retrieve the column name that already rolled up 
+	/* Part 1 - roll up/down operation (combining roll up and down)
+	 * Retrieve the column that rolled up (in highest hierarchy)
 	 */
 	public List<String> getRollUp_Column(String col) {
 		String[] columns = null;
 		String sortOrder = null;
 		int index_CONTENT = 0;
 
-		if (col.equals("Month -> Quarter")) {
+		if (col.equals("Month & Quarter")) {
 			columns = new String[] {quarter_of_sales};
 			sortOrder = "quarter ASC";
-		} else if (col.equals("Town -> City")) {
+		} else if (col.equals("Town & City")) {
 			columns = new String[] {sales_city};
 			sortOrder = "city ASC";
-		} else if (col.equals("City -> Country")) {
+		} else if (col.equals("City & Country")) {
 			columns = new String[] {sales_country};
 			sortOrder = "country ASC";
 		}
@@ -133,11 +132,11 @@ public class SQLiteAdapter {
 		Cursor cursor = sqLiteDatabase.query(MYDATABASE_TABLE, 
 				columns, null, null, null, null, sortOrder);
 
-		if (col.equals("Month -> Quarter"))
+		if (col.equals("Month & Quarter"))
 			index_CONTENT = cursor.getColumnIndex(quarter_of_sales);
-		else if (col.equals("Town -> City"))
+		else if (col.equals("Town & City"))
 			index_CONTENT = cursor.getColumnIndex(sales_city);
-		else if (col.equals("City -> Country"))
+		else if (col.equals("City & Country"))
 			index_CONTENT = cursor.getColumnIndex(sales_country);
 
 		int cursor_no = 0;
@@ -156,8 +155,8 @@ public class SQLiteAdapter {
 
 			cursor.moveToNext();
 		}
-		
-		if (col.equals("Month -> Quarter")) {
+
+		if (col.equals("Month & Quarter")) {
 			for (int i = 0; i < lst.size(); i++) {
 				if (lst.get(i).equals("Q1")) {
 					lst.remove(i);
@@ -174,23 +173,24 @@ public class SQLiteAdapter {
 				}
 			}
 		}
-		
+
 		cursor.close();
 		return lst;
 	}
 
-	/*	roll up operation - Part 2
-	 *	retrieve the whole rows for the selected column
+	/* Part 2 - roll up/down operation
+	 * Retrieve the column under the previous rolled up column
 	 */
-	public List<List<String>> getRollUp_Data(String col, String ret) {
-		String[] columns = new String[] {itemName, itemQuantity, itemPrice, month_of_sales,
-				quarter_of_sales, year_of_sales, sales_town, sales_city, sales_country};
+	public List<String> getRollDown_Column(String col, String ret) {
+		String[] columns = null;
 		String sortOrder = null;
+		int index_CONTENT = 0;
 		Cursor cursor = null;
 
-		if (col.equals("Month -> Quarter")) {
+		if (col.equals("Month & Quarter")) {
+			columns = new String[] {month_of_sales};
 			sortOrder = "month ASC";
-			
+
 			if (ret.equals("Quarter 1"))
 				ret = "Q1";
 			else if (ret.equals("Quarter 2"))
@@ -199,139 +199,29 @@ public class SQLiteAdapter {
 				ret = "Q3";
 			else if (ret.equals("Quarter 4"))
 				ret = "Q4";
-			
+
 			cursor = sqLiteDatabase.query(MYDATABASE_TABLE,
 					columns, quarter_of_sales + "=?", new String[]{ret}, null, null, sortOrder);
-		} else if (col.equals("Town -> City")) {
+		} else if (col.equals("Town & City")) {
+			columns = new String[] {sales_town};
 			sortOrder = "town ASC";
+
 			cursor = sqLiteDatabase.query(MYDATABASE_TABLE,
 					columns, sales_city + "=?", new String[]{ret}, null, null, sortOrder);
-		} else if (col.equals("City -> Country")) {
+		} else if (col.equals("City & Country")) {
+			columns = new String[] {sales_city};
 			sortOrder = "city ASC";
+
 			cursor = sqLiteDatabase.query(MYDATABASE_TABLE,
 					columns, sales_country + "=?", new String[]{ret}, null, null, sortOrder);
 		}
 
-		int itemname = cursor.getColumnIndex(itemName);
-		int quantity = cursor.getColumnIndex(itemQuantity);
-		int price = cursor.getColumnIndex(itemPrice);
-		int month =  cursor.getColumnIndex(month_of_sales);
-		int quarter =  cursor.getColumnIndex(quarter_of_sales);
-		int year =  cursor.getColumnIndex(year_of_sales);
-		int town = cursor.getColumnIndex(sales_town);
-		int city = cursor.getColumnIndex(sales_city);
-		int country = cursor.getColumnIndex(sales_country);
-
-		List<List<String>> twoList = new ArrayList<List<String>>();
-		List<String> result = new ArrayList<String>();
-		List<String> quarter_result = new ArrayList<String>();
-		
-		DecimalFormat df = new DecimalFormat("0.00");
-		int q1 = 0, q2 = 0, q3 = 0, q4 = 0;
-		boolean Q1 = false, Q2 = false, Q3 = false, Q4 = false;
-		
-		if (col.equals("Month -> Quarter")) {
-			for (cursor.moveToFirst(); !(cursor.isAfterLast());
-					cursor.moveToNext()) {
-				if (cursor.getString(quarter).equals("Q1")) {
-					Q1 = true;
-					q1 += Integer.parseInt(cursor.getString(quantity));
-					
-				} else if (cursor.getString(quarter).equals("Q2")) {
-					Q2 = true;
-					q2 += Integer.parseInt(cursor.getString(quantity));	
-					
-				} else if (cursor.getString(quarter).equals("Q3")) {
-					Q3 = true;
-					q3 += Integer.parseInt(cursor.getString(quantity));
-					
-				} else if (cursor.getString(quarter).equals("Q4")) {
-					Q4 = true;
-					q4 += Integer.parseInt(cursor.getString(quantity));
-					
-				}
-				
-				if (Q1 && (Q2 || Q3 || Q4) || (Q1 && cursor.isLast())) {
-					quarter_result.add(cursor.getString(itemname) + ", " + q1);
-					
-					Q1 = false;
-				}
-				else if (Q2 && (Q3 || Q4) || (Q2 && cursor.isLast())) {
-					quarter_result.add(cursor.getString(itemname) + ", " + q2);
-					
-					Q2 = false;
-				}
-				else if (Q3 && Q4 || (Q3 && cursor.isLast())) {
-					quarter_result.add(cursor.getString(itemname) + ", " + q3);
-					
-					Q3 = false;
-				}
-				else if (Q4 && cursor.isLast() || (Q2 && cursor.isLast())) {
-					quarter_result.add(cursor.getString(itemname) + ", " + q4);
-				}
-				
-				result.add(cursor.getString(itemname) + ", " + Integer.parseInt(cursor.getString(quantity)) + ", "
-						+ df.format(Double.parseDouble(cursor.getString(price))) + ", " + cursor.getString(month) + ", "
-						+ cursor.getString(year) + ", " + cursor.getString(town) + ", "
-						+ cursor.getString(city) + ", " + cursor.getString(country) + '\n');
-				
-				twoList.add(quarter_result);
-				twoList.add(result);
-			}
-		} else if (col.equals("Town -> City")) {
-			for (cursor.moveToFirst(); !(cursor.isAfterLast());
-					cursor.moveToNext()) {
-				result.add(cursor.getString(itemname) + ", " + Integer.parseInt(cursor.getString(quantity)) + ", "
-						+ df.format(Double.parseDouble(cursor.getString(price))) + ", " + cursor.getString(month) + ", "
-						+ cursor.getString(quarter) + " " + cursor.getString(year) + ", " + cursor.getString(town) + ", "
-						+ cursor.getString(country));
-				
-				twoList.add(result);
-			}
-		} else if (col.equals("City -> Country")) {
-			for (cursor.moveToFirst(); !(cursor.isAfterLast());
-					cursor.moveToNext()) {
-				result.add(cursor.getString(itemname) + ", " + Integer.parseInt(cursor.getString(quantity)) + ", "
-						+ df.format(Double.parseDouble(cursor.getString(price))) + ", " + cursor.getString(month) + ", "
-						+ cursor.getString(quarter) + " " + cursor.getString(year) + ", " + cursor.getString(town) + ", "
-						+ cursor.getString(city));
-				
-				twoList.add(result);
-			}
-		}
-
-		cursor.close();
-		return twoList;
-	}
-
-	/* roll down operation - Part 1
-	 * only retrieve the column name that already rolled down 
-	 */
-	public List<String> getRollDown_Column(String col) {
-		String[] columns = null;
-		String sortOrder = null;
-		int index_CONTENT = 0;
-
-		if (col.equals("Quarter -> Month")) {
-			columns = new String[] {month_of_sales};
-			sortOrder = "month ASC";
-		} else if (col.equals("Country -> City")) {
-			columns = new String[] {sales_city};
-			sortOrder = "city ASC";
-		} else if (col.equals("City -> Town")) {
-			columns = new String[] {sales_town};
-			sortOrder = "town ASC";
-		}
-
-		Cursor cursor = sqLiteDatabase.query(MYDATABASE_TABLE, 
-				columns, null, null, null, null, sortOrder);
-
-		if (col.equals("Quarter -> Month"))
+		if (col.equals("Month & Quarter"))			
 			index_CONTENT = cursor.getColumnIndex(month_of_sales);
-		else if (col.equals("Country -> City"))
-			index_CONTENT = cursor.getColumnIndex(sales_city);
-		else if (col.equals("City -> Town"))
+		else if (col.equals("Town & City"))
 			index_CONTENT = cursor.getColumnIndex(sales_town);
+		else if (col.equals("City & Country"))
+			index_CONTENT = cursor.getColumnIndex(sales_city);
 
 		int cursor_no = 0;
 		List<String> lst = new ArrayList<String>();
@@ -349,9 +239,10 @@ public class SQLiteAdapter {
 			cursor.moveToNext();
 		}
 
-		if (col.equals("Quarter -> Month")) {
+		// To place month in correct order, from January to December
+		if (col.equals("Month & Quarter")) {
 			int[] mth = new int[lst.size()];
-			
+
 			for (int i = 0; i < lst.size(); i++) {
 				if (lst.get(i).equals("January"))
 					mth[i] = 1;
@@ -404,7 +295,7 @@ public class SQLiteAdapter {
 					}
 				}
 			}
-			
+
 			lst.clear();
 			for (int k = 0; k < mth.length; k++) {
 				lst.add(String.valueOf(mth[k]));
@@ -415,8 +306,8 @@ public class SQLiteAdapter {
 		return lst;
 	}
 
-	/*	roll down operation - Part 2
-	 *	retrieve the whole rows for the selected column
+	/*	roll up/down operation - Part 3
+	 *	retrieve the whole rows for the selected roll down column
 	 */
 	public List<String> getRollDown_Data(String col, String ret) {
 		String[] columns = new String[] {itemName, itemQuantity, itemPrice, month_of_sales,
@@ -424,18 +315,21 @@ public class SQLiteAdapter {
 		String sortOrder = null;
 		Cursor cursor = null;
 
-		if (col.equals("Quarter -> Month")) {
-			sortOrder = "quarter ASC";
+		if (col.equals("Month & Quarter")) {
+			sortOrder = "month ASC";
+
 			cursor = sqLiteDatabase.query(MYDATABASE_TABLE,
 					columns, month_of_sales + "=?", new String[]{ret}, null, null, sortOrder);
-		} else if (col.equals("Country -> City")) {
-			sortOrder = "country ASC";
-			cursor = sqLiteDatabase.query(MYDATABASE_TABLE,
-					columns, sales_city + "=?", new String[]{ret}, null, null, sortOrder);
-		} else if (col.equals("City -> Town")) {
-			sortOrder = "city ASC";
+		} else if (col.equals("Town & City")) {
+			sortOrder = "town ASC";
+
 			cursor = sqLiteDatabase.query(MYDATABASE_TABLE,
 					columns, sales_town + "=?", new String[]{ret}, null, null, sortOrder);
+		} else if (col.equals("City & Country")) {
+			sortOrder = "city ASC";
+
+			cursor = sqLiteDatabase.query(MYDATABASE_TABLE,
+					columns, sales_city + "=?", new String[]{ret}, null, null, sortOrder);
 		}
 
 		int itemname = cursor.getColumnIndex(itemName);
@@ -450,32 +344,13 @@ public class SQLiteAdapter {
 
 		List<String> result = new ArrayList<String>();
 
-		DecimalFormat df = new DecimalFormat("0.00");
-
-		if (col.equals("Quarter -> Month")) {
-			for (cursor.moveToFirst(); !(cursor.isAfterLast());
-					cursor.moveToNext()) {
-				result.add(cursor.getString(itemname) + ", " + Integer.parseInt(cursor.getString(quantity)) + ", "
-						+ df.format(Double.parseDouble(cursor.getString(price))) + ", " + cursor.getString(quarter) + ", "
-						+ cursor.getString(year) + ", " + cursor.getString(town) + ", "
-						+ cursor.getString(city) + ", " + cursor.getString(country));
-			}
-		} else if (col.equals("Country -> City")) {
-			for (cursor.moveToFirst(); !(cursor.isAfterLast());
-					cursor.moveToNext()) {
-				result.add(cursor.getString(itemname) + ", " + Integer.parseInt(cursor.getString(quantity)) + ", "
-						+ df.format(Double.parseDouble(cursor.getString(price))) + ", " + cursor.getString(month) + ", "
-						+ cursor.getString(quarter) + ", " + cursor.getString(year) + ", " + cursor.getString(town) + ", "
-						+ cursor.getString(country));	
-			}
-		} else if (col.equals("City -> Town")) {
-			for (cursor.moveToFirst(); !(cursor.isAfterLast());
-					cursor.moveToNext()) {
-				result.add(cursor.getString(itemname) + ", " + Integer.parseInt(cursor.getString(quantity)) + ", "
-						+ df.format(Double.parseDouble(cursor.getString(price))) + ", " + cursor.getString(month) + ", "
-						+ cursor.getString(quarter) + " " + cursor.getString(year) + ", " + cursor.getString(city) + ", "
-						+ cursor.getString(country));
-			}
+		// now always return the whole result, no selected column anymore
+		for (cursor.moveToFirst(); !(cursor.isAfterLast());
+				cursor.moveToNext()) {
+			result.add(cursor.getString(itemname) + ", " + Integer.parseInt(cursor.getString(quantity)) + ", "
+					+ cursor.getString(price) + ", " + cursor.getString(month) + ", "
+					+ cursor.getString(quarter) + ", " + cursor.getString(year) + ", " + cursor.getString(town) + ", "
+					+ cursor.getString(city) + ", " + cursor.getString(country) + '\n');
 		}
 
 		cursor.close();

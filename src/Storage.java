@@ -174,7 +174,7 @@ public class Storage extends Activity {
 
 												String name = parts[0];
 												int quantity = Integer.parseInt(parts[1]);
-												double price = Double.parseDouble(parts[2]);
+												String price = parts[2];
 												String month = parts[3];
 												String quarter = parts[4];
 												int year = Integer.parseInt(parts[5]);

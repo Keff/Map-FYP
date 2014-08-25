@@ -43,15 +43,15 @@ public class OlapExpandableAdapter extends BaseExpandableListAdapter {
 	public View getChildView(int groupPosition, final int childPosition,
 			boolean isLastChild, View convertView, ViewGroup parent) {
 		tempChild = (ArrayList<String>) Childtem.get(groupPosition);
-		
+
 		if (convertView == null) {
 			convertView = minflater.inflate(R.layout.childrow, null);
 		}
-		
+
 		TextView text = null;
 		text = (TextView) convertView.findViewById(R.id.textView1);
 		text.setText(tempChild.get(childPosition));
-		
+
 		return convertView;
 	}
 
@@ -77,7 +77,7 @@ public class OlapExpandableAdapter extends BaseExpandableListAdapter {
 
 	@Override
 	public void onGroupExpanded(int groupPosition) {
-        super.onGroupExpanded(groupPosition);
+		super.onGroupExpanded(groupPosition);
 	}
 
 	@Override
@@ -93,7 +93,7 @@ public class OlapExpandableAdapter extends BaseExpandableListAdapter {
 		}
 		((CheckedTextView) convertView).setText(groupItem.get(groupPosition));
 		((CheckedTextView) convertView).setChecked(isExpanded);
-		
+
 		return convertView;
 	}
 

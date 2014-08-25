@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.mad.fyp.tescoolap"
+    android:versionCode="2"
+    android:versionName="2.0" >
+
+    <!-- Version History -->
+    <!--
+	- v1.1
+    * Added Storage.java (for user to browse the directory and files on their phone)
+    
+	- v1.2
+    * Improve the checking of directory and file. (Remove array list clear function)
+    * Reach empty directory will show toast now, instead show a blank activity to user.
+    * Bug Fixed.
+    
+	- v1.3
+    * Added a button to choose OLAP operation, but function not included.
+    * Database have LIAO. v1 (insert and delete bra bra bra)
+    * First Milestone. - next step is try to implement roll up feature. :)
+	- v1.4
+    * Roll Up Operation ready.
+    * Change icon.
+    * Further remove duplicate, useless code, and also commented/format code
+    * Some fixes and improve performance.
+	- v2.0
+    * Join roll up and roll down operation into one.
+    * Roll Up/Down: Implement ExpandableListView and using it to show result
+    * Many changes made to database, especially SQLiteAdapter, because of ExpandableListView implementation.
+    -->
+
+    <!-- Allow read and write permission of storage -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
+    <uses-sdk
+        android:minSdkVersion="8"
+        android:targetSdkVersion="19" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@style/AppTheme" >
+        <activity
+            android:name="com.mad.fyp.tescoolap.MainActivity"
+            android:label="@string/app_name" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="com.mad.fyp.tescoolap.Storage"
+            android:label="@string/title_activity_storage" >
+        </activity>
+        <activity
+            android:name="com.mad.fyp.tescoolap.RollUp"
+            android:label="@string/title_activity_roll_up" >
+        </activity>
+        <activity
+            android:name="com.mad.fyp.tescoolap.Slice"
+            android:label="@string/title_activity_slice" >
+        </activity>
+    </application>
+
+</manifest>
