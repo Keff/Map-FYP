@@ -10,6 +10,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.View;
 import android.widget.ExpandableListView;
 import android.widget.ExpandableListView.OnChildClickListener;
@@ -22,18 +25,19 @@ public class RollUp extends ExpandableListActivity implements OnChildClickListen
 	List<String> result;
 	List<String> parentItems;
 	List<Object> childItems;
+	String selectedColumn;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		Intent i = this.getIntent();
-		final String selectedColumn = i.getStringExtra("column");
-
-		mySQLiteAdapter = new SQLiteAdapter(this);
-		mySQLiteAdapter.openToRead();
+		selectedColumn = i.getStringExtra("column");
 
 		parentItems = new ArrayList<String>();
 		childItems = new ArrayList<Object>();
+
+		mySQLiteAdapter = new SQLiteAdapter(this);
+		mySQLiteAdapter.openToRead();
 		parentItems = mySQLiteAdapter.getRollUp_Column(selectedColumn);
 		mySQLiteAdapter.close();
 
@@ -44,9 +48,9 @@ public class RollUp extends ExpandableListActivity implements OnChildClickListen
 		expandableList.setClickable(true);
 
 		if (selectedColumn.equals("Month & Quarter")) {
-			setTitle("Roll Up/Down (Month & Quarter)");
+			setTitle("Drill Up/Down (Month & Quarter)");
 			Toast.makeText(getApplicationContext(),
-					"Roll Up/Down - Month & Quarter\noperation is chosen.", Toast.LENGTH_SHORT).show();
+					"Drill Up/Down - Month & Quarter\noperation is chosen.", Toast.LENGTH_SHORT).show();
 
 			result = new ArrayList<String>();
 			childItems.clear();
@@ -92,16 +96,16 @@ public class RollUp extends ExpandableListActivity implements OnChildClickListen
 					} else if (result.get(j).equals("12")) {
 						result.remove(j);
 						result.add(j, "December");
-					}	
+					}
 				}
 				childItems.add(result);
 			}
 			mySQLiteAdapter.close();
 
 		} else if (selectedColumn.equals("Town & City")) {
-			setTitle("Roll Up/Down (Town & City)");
+			setTitle("Drill Up/Down (Town & City)");
 			Toast.makeText(getApplicationContext(),
-					"Roll Up/Down - Town & City\noperation is chosen.", Toast.LENGTH_SHORT).show();
+					"Drill Up/Down - Town & City\noperation is chosen.", Toast.LENGTH_SHORT).show();
 
 			result = new ArrayList<String>();
 			childItems.clear();
@@ -114,9 +118,9 @@ public class RollUp extends ExpandableListActivity implements OnChildClickListen
 			mySQLiteAdapter.close();
 
 		} else if (selectedColumn.equals("City & Country")) {
-			setTitle("Roll Up/Down (City & Country)");
+			setTitle("Drill Up/Down (City & Country)");
 			Toast.makeText(getApplicationContext(),
-					"Roll Up/Down - City & Country\noperation is chosen.", Toast.LENGTH_SHORT).show();
+					"Drill Up/Down - City & Country\noperation is chosen.", Toast.LENGTH_SHORT).show();
 
 			result = new ArrayList<String>();
 			childItems.clear();
@@ -162,7 +166,83 @@ public class RollUp extends ExpandableListActivity implements OnChildClickListen
 		});
 	}
 
-	// own 'Back" function.. more accurate and efficiently
+	// Defined to-do function to menu buttons
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+
+		OnMenuItemClickListener monthListener = new OnMenuItemClickListener(){
+
+			@Override
+			public boolean onMenuItemClick(MenuItem arg0) {
+				// TODO Auto-generated method stub
+				Intent intent = new Intent(RollUp.this, RollUp.class);
+				intent.putExtra("column", "Month & Quarter");
+				startActivity(intent);
+				finish();
+
+				return false;
+			}
+		};
+
+		OnMenuItemClickListener townListener = new OnMenuItemClickListener(){
+
+			@Override
+			public boolean onMenuItemClick(MenuItem arg0) {
+				// TODO Auto-generated method stub
+				Intent intent = new Intent(RollUp.this, RollUp.class);
+				intent.putExtra("column", "Town & City");
+				startActivity(intent);
+				finish();
+
+				return false;
+			}
+		};
+
+		OnMenuItemClickListener cityListener = new OnMenuItemClickListener(){
+
+			@Override
+			public boolean onMenuItemClick(MenuItem arg0) {
+				// TODO Auto-generated method stub
+				Intent intent = new Intent(RollUp.this, RollUp.class);
+				intent.putExtra("column", "City & Country");
+				startActivity(intent);
+				finish();
+
+				return false;
+			}
+		};
+
+		OnMenuItemClickListener homeListener = new OnMenuItemClickListener(){
+
+			@Override
+			public boolean onMenuItemClick(MenuItem arg0) {
+				// TODO Auto-generated method stub
+				Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+				intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+				startActivity(intent);
+				finish();
+
+				return false;
+			}
+		};
+
+		if (selectedColumn.equals("Month & Quarter")) {
+			menu.add("Town & City").setOnMenuItemClickListener(townListener);
+			menu.add("City & Country").setOnMenuItemClickListener(cityListener);
+		} else if (selectedColumn.equals("Town & City")) {
+			menu.add("Month & Quarter").setOnMenuItemClickListener(monthListener);
+			menu.add("City & Country").setOnMenuItemClickListener(cityListener);
+		} else if (selectedColumn.equals("City & Country")) {
+			menu.add("Month & Quarter").setOnMenuItemClickListener(monthListener);
+			menu.add("Town & City").setOnMenuItemClickListener(townListener);
+		}
+
+		menu.add("Return to home").setOnMenuItemClickListener(homeListener);
+
+		return true;
+	}
+
+	// Defined to-do function to back buttons
 	public boolean onKeyDown(int keyCode, KeyEvent event)  {
 		if (keyCode == KeyEvent.KEYCODE_BACK
 				&& event.getRepeatCount() == 0) {

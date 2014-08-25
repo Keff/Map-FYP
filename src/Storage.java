@@ -40,7 +40,7 @@ public class Storage extends Activity {
 		getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN); // hide keyboard on startup
 		builderWarning = new AlertDialog.Builder(this);
 		mySQLiteAdapter = new SQLiteAdapter(this);
-		
+
 		// set title of activity
 		setTitle("Choose File (*.txt)");
 
@@ -186,14 +186,14 @@ public class Storage extends Activity {
 														quarter, year, town, city, country);
 												havItem = true;
 											}
-											
+
 											line++;
 										}
 
 										if (havItem) {
 											Toast.makeText(getApplicationContext(),
 													"You have inserted " + (line-1) + " items into database.", Toast.LENGTH_SHORT).show();
-											
+
 											Intent i = new Intent(Storage.this, MainActivity.class);
 											startActivity(i);
 											finish();
@@ -201,7 +201,7 @@ public class Storage extends Activity {
 
 										mySQLiteAdapter.close();
 										br.close();
-										
+
 									} catch (Exception e) {
 										e.printStackTrace();
 									}

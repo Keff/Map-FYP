@@ -37,7 +37,7 @@ public class MainActivity extends Activity {
 		image.setImageResource(R.drawable.tesco);
 
 		mySQLiteAdapter = new SQLiteAdapter(this);
-		mySQLiteAdapter.openToRead();
+		mySQLiteAdapter.openToWrite();
 		count = mySQLiteAdapter.count();
 		mySQLiteAdapter.close();
 
@@ -127,10 +127,12 @@ public class MainActivity extends Activity {
 
 	private void olapOperation() {
 		// TODO Auto-generated method stub
-		TextView tvMsg = new TextView(this);
+		final TextView tvMsg = new TextView(this);
+		final TextView tvMsg2 = new TextView(this);
+		final TextView tvMsg3 = new TextView(this);
 		tvMsg.setText("Select an Olap Operation.");
 
-		final String[] olapOperation = {"...", "Roll Up & Down", "Slice & Dice", "Pivot (rotate)"};
+		final String[] olapOperation = {"...", "Drill Up & Down", "Slice & Dice", "Pivot (rotate)"};
 		ArrayAdapter<String> adapterOlapOperation = 
 				new ArrayAdapter<String> (this, android.R.layout.simple_list_item_1, olapOperation);
 		adapterOlapOperation.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -144,12 +146,17 @@ public class MainActivity extends Activity {
 		llOlap.addView(spOlapOperation);
 
 		// initialize views to use on setOnItemSelectedListener later
-		final TextView tvMsg2 = new TextView(this);
-		final List<String> lstColumn = new ArrayList<String>();
+		final List<String> lstColumn = new ArrayList<String>();		
 		final ArrayAdapter<String> adapterColumn = 
 				new ArrayAdapter<String> (this, android.R.layout.simple_list_item_1, lstColumn);
 		adapterColumn.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		final Spinner spColumn = new Spinner(this);
+
+		final List<String> lstColumnChild = new ArrayList<String>();
+		final ArrayAdapter<String> adapterColumnChild = 
+				new ArrayAdapter<String> (this, android.R.layout.simple_list_item_1, lstColumnChild);
+		adapterColumnChild.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		final Spinner spColumnChild = new Spinner(this);
 
 		// allows user to choose which column to perform their desired OLAP operation
 		spOlapOperation.setOnItemSelectedListener(new OnItemSelectedListener() {
@@ -162,8 +169,14 @@ public class MainActivity extends Activity {
 				llOlap.removeView(tvMsg2);
 				llOlap.removeView(spColumn);
 
+				// Disable the annoying listener called when the user not choosing Slice and Dice operation
+				lstColumnChild.clear();
+				llOlap.removeView(tvMsg3);
+				llOlap.removeView(spColumnChild);
+				spColumn.setOnItemSelectedListener(null);
+
 				if (position == 1) {
-					tvMsg2.setText("\nSelect column for Roll Up & Down operation.");
+					tvMsg2.setText("\nSelect column type for Drill Up & Down operation.");
 					lstColumn.add("Month & Quarter");
 					lstColumn.add("Town & City");
 					lstColumn.add("City & Country");
@@ -171,9 +184,126 @@ public class MainActivity extends Activity {
 					llOlap.addView(tvMsg2);
 					llOlap.addView(spColumn);
 				} else if (position == 2) {
-					tvMsg2.setText("\nSelect column for Slice & Dice operation.");
+					tvMsg2.setText("\nSelect column type for Slice & Dice operation.");
+					lstColumn.add("Item Name");
+					lstColumn.add("Month");
+					lstColumn.add("Quarter");
+					lstColumn.add("Year");
+					lstColumn.add("Town");
+					lstColumn.add("City");
+					lstColumn.add("Country");
 
 					llOlap.addView(tvMsg2);
+					llOlap.addView(spColumn);
+
+					// Show child for the column that user selected 
+					spColumn.setOnItemSelectedListener(new OnItemSelectedListener() {
+
+						@Override
+						public void onItemSelected(AdapterView<?> parent, View view,
+								int position, long id) {
+							// TODO Auto-generated method stub
+							lstColumnChild.clear();
+							llOlap.removeView(tvMsg3);
+							llOlap.removeView(spColumnChild);
+
+							mySQLiteAdapter.openToRead();
+							if (position == 0) {
+								tvMsg3.setText("\nChoose a field: ");
+								List<String> field = mySQLiteAdapter.getSliceField("Item Name");
+
+								for (int i = 0; i < field.size(); i++)
+									lstColumnChild.add(field.get(i));
+
+							} else if (position == 1) {
+								tvMsg3.setText("\nChoose a field: ");
+								List<String> field = mySQLiteAdapter.getSliceField("Month");
+
+								for (int i = 0; i < field.size(); i++) {
+									if (field.get(i).equals("1")) {
+										field.remove(i);
+										field.add(i, "January");
+									} else if (field.get(i).equals("2")) {
+										field.remove(i);
+										field.add(i, "February");
+									} else if (field.get(i).equals("3")) {
+										field.remove(i);
+										field.add(i, "March");
+									} else if (field.get(i).equals("4")) {
+										field.remove(i);
+										field.add(i, "April");
+									} else if (field.get(i).equals("5")) {
+										field.remove(i);
+										field.add(i, "May");
+									} else if (field.get(i).equals("6")) {
+										field.remove(i);
+										field.add(i, "June");
+									} else if (field.get(i).equals("7")) {
+										field.remove(i);
+										field.add(i, "July");
+									} else if (field.get(i).equals("8")) {
+										field.remove(i);
+										field.add(i, "August");
+									} else if (field.get(i).equals("9")) {
+										field.remove(i);
+										field.add(i, "September");
+									} else if (field.get(i).equals("10")) {
+										field.remove(i);
+										field.add(i, "October");
+									} else if (field.get(i).equals("11")) {
+										field.remove(i);
+										field.add(i, "November");
+									} else if (field.get(i).equals("12")) {
+										field.remove(i);
+										field.add(i, "December");
+									}
+
+									lstColumnChild.add(field.get(i));
+								}
+							} else if (position == 2) {
+								tvMsg3.setText("\nChoose a field: ");
+								List<String> field = mySQLiteAdapter.getSliceField("Quarter");
+
+								for (int i = 0; i < field.size(); i++) 									
+									lstColumnChild.add(field.get(i));
+							} else if (position == 3) {
+								tvMsg3.setText("\nChoose a field: ");
+								List<String> field = mySQLiteAdapter.getSliceField("Year");
+
+								for (int i = 0; i < field.size(); i++) 									
+									lstColumnChild.add(field.get(i));
+							} else if (position == 4) {
+								tvMsg3.setText("\nChoose a field: ");
+								List<String> field = mySQLiteAdapter.getSliceField("Town");
+
+								for (int i = 0; i < field.size(); i++) 									
+									lstColumnChild.add(field.get(i));
+							} else if (position == 5) {
+								tvMsg3.setText("\nChoose a field: ");
+								List<String> field = mySQLiteAdapter.getSliceField("City");
+
+								for (int i = 0; i < field.size(); i++) 									
+									lstColumnChild.add(field.get(i));
+							} else if (position == 6) {
+								tvMsg3.setText("\nChoose a field: ");
+								List<String> field = mySQLiteAdapter.getSliceField("Country");
+
+								for (int i = 0; i < field.size(); i++) 									
+									lstColumnChild.add(field.get(i));
+							}
+							mySQLiteAdapter.close();
+
+							llOlap.addView(tvMsg3);
+							llOlap.addView(spColumnChild);
+
+							spColumnChild.setAdapter(adapterColumnChild);
+						}
+
+						@Override
+						public void onNothingSelected(AdapterView<?> parent) {
+							// TODO Auto-generated method stub
+
+						}});
 				} else if (position == 3) {
 					tvMsg2.setText("\nSelect column for Pivot (rotate) operation.");
 
@@ -197,9 +327,9 @@ public class MainActivity extends Activity {
 			public void onClick(DialogInterface dialog, int which) {
 				// TODO Auto-generated method stub
 				String selectedOlapOperation = spOlapOperation.getSelectedItem().toString();
-				String selectedColumn = null;
+				String selectedColumn = null, selectedColumnChild = null;
 
-				if (!(selectedOlapOperation.equals(olapOperation[0].toString()) || selectedOlapOperation.equals(olapOperation[2].toString())
+				if (!(selectedOlapOperation.equals(olapOperation[0].toString())
 						|| selectedOlapOperation.equals(olapOperation[3].toString())))
 					selectedColumn = spColumn.getSelectedItem().toString();
 
@@ -208,18 +338,27 @@ public class MainActivity extends Activity {
 					Toast.makeText(getApplicationContext(),
 							"You must choose an Olap Operation.", Toast.LENGTH_SHORT).show();
 				} 
-				// Roll Up and Down Operation
+
+				// Drill Up and Down Operation
 				else if (selectedOlapOperation.equals(olapOperation[1].toString())) {					
 					Intent i = new Intent(MainActivity.this, RollUp.class);	
 					i.putExtra("column", selectedColumn);
 					startActivity(i);
 					finish();
-				} /*else if (selectedOlapOperation.equals(olapOperation[2].toString())) {
-					Intent i = new Intent(MainActivity.this, RollDown.class);	
+				} 
+
+				// Slice and Dice Operation
+				else if (selectedOlapOperation.equals(olapOperation[2].toString())) {
+					selectedColumnChild = spColumnChild.getSelectedItem().toString();
+
+					Intent i = new Intent(MainActivity.this, Slice.class);	
 					i.putExtra("column", selectedColumn);
+					i.putExtra("columnChild", selectedColumnChild);
 					startActivity(i);
 					finish();
-				} else if (selectedOlapOperation.equals(olapOperation[3].toString())) {
+				} 
+
+				/*else if (selectedOlapOperation.equals(olapOperation[3].toString())) {
 					Intent i = new Intent(MainActivity.this, Slice.class);	
 					i.putExtra("column", selectedColumn);
 					startActivity(i);

@@ -26,7 +26,10 @@
 	- v2.0
     * Join roll up and roll down operation into one.
     * Roll Up/Down: Implement ExpandableListView and using it to show result
-    * Many changes made to database, especially SQLiteAdapter, because of ExpandableListView implementation.
+    * Many changes made to database, especially SQLiteAdapter, because of ExpandableListView implementation.
+    
+	- v2.1
+    * Slice Operation ready.
     -->
 
     <!-- Allow read and write permission of storage -->
