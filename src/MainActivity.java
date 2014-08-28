@@ -1,14 +1,29 @@
 package com.mad.fyp.tescoolap;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.entity.BufferedHttpEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Typeface;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -26,7 +41,7 @@ public class MainActivity extends Activity {
 
 	// for database usage
 	private SQLiteAdapter mySQLiteAdapter;
-	int count = 0;
+	int count = 0, line = 0;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -35,9 +50,11 @@ public class MainActivity extends Activity {
 		// call image to be load
 		ImageView image = new ImageView(this);
 		image.setImageResource(R.drawable.tesco);
+		final AlertDialog.Builder builderInternetAccess = new AlertDialog.Builder(this);
+		final AlertDialog.Builder builderDeletedb = new AlertDialog.Builder(this);
 
 		mySQLiteAdapter = new SQLiteAdapter(this);
-		mySQLiteAdapter.openToWrite();
+		mySQLiteAdapter.openToRead();
 		count = mySQLiteAdapter.count();
 		mySQLiteAdapter.close();
 
@@ -45,6 +62,9 @@ public class MainActivity extends Activity {
 
 		LinearLayout ll = new LinearLayout(this);
 		ll.setOrientation(LinearLayout.VERTICAL);
+
+		final Button btServer = new Button(this);
+		btServer.setText("Download from Server");
 
 		Button btDirectory = new Button(this);
 		btDirectory.setText("Choose File");
@@ -68,6 +88,25 @@ public class MainActivity extends Activity {
 			btDeletedb.setEnabled(true);
 		}
 
+		btServer.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				// Get connection info
+				ConnectivityManager cm =
+						(ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+				NetworkInfo netInfo = cm.getActiveNetworkInfo();
+
+				if (netInfo != null && netInfo.isConnectedOrConnecting()) {
+					new readFromServer().execute("http://download1648.mediafire.com/0f27je35elvg/8pfl8h74184l4oj/Ikan.txt");
+				} else {
+					builderInternetAccess.setTitle("Warning").setMessage(
+							"No internet access!").setIcon(android.R.drawable.ic_dialog_alert).setNeutralButton(
+									"Close", null).show();
+				}
+			}});
+
 		btDirectory.setOnClickListener(new OnClickListener() {
 
 			@Override
@@ -89,7 +128,6 @@ public class MainActivity extends Activity {
 
 		});
 
-		final AlertDialog.Builder builderDeletedb = new AlertDialog.Builder(this);
 		btDeletedb.setOnClickListener(new OnClickListener() {
 
 			@Override
@@ -118,11 +156,98 @@ public class MainActivity extends Activity {
 			}});
 
 		ll.addView(image);
+		ll.addView(btServer);
 		ll.addView(btDirectory);
 		ll.addView(btOlap);
 		ll.addView(btDeletedb);
 		ll.addView(tvDBStatus);
 		setContentView(ll);
+	}
+
+	private class readFromServer extends AsyncTask<String, Void, String> {
+
+		ProgressDialog dialog;
+
+		@Override
+		protected void onPreExecute() {
+			super.onPreExecute();
+
+			// show progress dialog when downloading 
+			dialog = ProgressDialog.show(MainActivity.this, null, "Downloading...");
+		}
+
+		@Override
+		protected String doInBackground(String... params) {
+
+			try {
+				DefaultHttpClient httpClient = new DefaultHttpClient();
+				HttpGet httpGet = new HttpGet(params[0]);
+				HttpResponse response = httpClient.execute(httpGet);
+				HttpEntity entity = response.getEntity();
+
+				BufferedHttpEntity buf = new BufferedHttpEntity(entity);
+				InputStream is = buf.getContent();
+				BufferedReader r = new BufferedReader(new InputStreamReader(is));
+
+				StringBuilder total = new StringBuilder();
+				String content = "";
+
+				mySQLiteAdapter.openToWrite();
+				while ((content = r.readLine()) != null) {
+					total.append(content + "\n");
+
+					if (line == 0) {
+						if (!content.equals("Item name, Quantity, Price per item, Month, Quarter, Year, Town, City, Country"))
+							break;
+
+					} else if (line > 0) {
+						String[] parts = content.split(", ");
+
+						String name = parts[0];
+						int quantity = Integer.parseInt(parts[1]);
+						String price = parts[2];
+						String month = parts[3];
+						String quarter = parts[4];
+						int year = Integer.parseInt(parts[5]);
+						String town = parts[6];
+						String city = parts[7];
+						String country = parts[8];
+
+						mySQLiteAdapter.insert(name, quantity, price, month, 
+								quarter, year, town, city, country);
+					}
+
+					line++;
+				}
+
+				mySQLiteAdapter.close();
+				r.close();
+
+				String result = total.toString();
+				Log.i("Get URL", "Downloaded string: " + result);
+				return result;
+			} catch (Exception e) {
+				Log.e("Get Url", "Error in downloading: " + e.toString());
+			}
+			return null;
+		}
+
+		@Override
+		protected void onPostExecute(String result) {
+			super.onPostExecute(result);
+
+			// TODO change text view id for yourself
+			// close progresses dialog
+			dialog.dismiss();
+
+			Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+			startActivity(intent);
+			finish();
+
+			Toast.makeText(getApplicationContext(),
+					"Download Complete.\n" + (line-1) + " items inserted.", Toast.LENGTH_SHORT).show();
+		}
 	}
 
 	private void olapOperation() {
@@ -132,7 +257,7 @@ public class MainActivity extends Activity {
 		final TextView tvMsg3 = new TextView(this);
 		tvMsg.setText("Select an Olap Operation.");
 
-		final String[] olapOperation = {"...", "Drill Up & Down", "Slice & Dice", "Pivot (rotate)"};
+		final String[] olapOperation = {"...", "Drill Up & Down", "Slice & Dice"};
 		ArrayAdapter<String> adapterOlapOperation = 
 				new ArrayAdapter<String> (this, android.R.layout.simple_list_item_1, olapOperation);
 		adapterOlapOperation.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -304,11 +429,11 @@ public class MainActivity extends Activity {
 							// TODO Auto-generated method stub
 
 						}});
-				} else if (position == 3) {
+				} /*else if (position == 3) {
 					tvMsg2.setText("\nSelect column for Pivot (rotate) operation.");
 
 					llOlap.addView(tvMsg2);
-				}
+				}*/
 
 				spColumn.setAdapter(adapterColumn);
 			}
@@ -329,8 +454,7 @@ public class MainActivity extends Activity {
 				String selectedOlapOperation = spOlapOperation.getSelectedItem().toString();
 				String selectedColumn = null, selectedColumnChild = null;
 
-				if (!(selectedOlapOperation.equals(olapOperation[0].toString())
-						|| selectedOlapOperation.equals(olapOperation[3].toString())))
+				if (!(selectedOlapOperation.equals(olapOperation[0].toString())))
 					selectedColumn = spColumn.getSelectedItem().toString();
 
 				// Select ..., no operation is chosen
@@ -363,7 +487,7 @@ public class MainActivity extends Activity {
 					i.putExtra("column", selectedColumn);
 					startActivity(i);
 					finish();
-				}*/	
+				}*/
 			}
 		}).setNeutralButton("Cancel", null).show();
 	}

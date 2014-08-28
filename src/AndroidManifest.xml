@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.mad.fyp.tescoolap"
-    android:versionCode="2"
-    android:versionName="2.0" >
+    android:versionCode="3"
+    android:versionName="3.0" >
 
     <!-- Version History -->
     <!--
@@ -29,11 +29,17 @@
     * Many changes made to database, especially SQLiteAdapter, because of ExpandableListView implementation.
     
 	- v2.1
-    * Slice Operation ready.
+    * Slice Operation ready.
+    
+	- v3.0
+    * Added 'Download from Server' option to allow user download the database online.
+    * Some minor changes to logic and UI. 
     -->
 
-    <!-- Allow read and write permission of storage -->
+    <!-- Added Permission -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <uses-sdk
         android:minSdkVersion="8"
