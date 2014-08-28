@@ -98,7 +98,7 @@ public class MainActivity extends Activity {
 						(ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 				NetworkInfo netInfo = cm.getActiveNetworkInfo();
 
-				if (netInfo != null && netInfo.isConnectedOrConnecting()) {
+				if (netInfo != null && netInfo.isConnected()) {
 					new readFromServer().execute("http://download1648.mediafire.com/0f27je35elvg/8pfl8h74184l4oj/Ikan.txt");
 				} else {
 					builderInternetAccess.setTitle("Warning").setMessage(
