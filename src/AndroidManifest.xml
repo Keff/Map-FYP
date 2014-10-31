@@ -22,7 +22,7 @@
     * Roll Up Operation ready.
     * Change icon.
     * Further remove duplicate, useless code, and also commented/format code
-    * Some fixes and improve performance.
+    * Various fixes and improve performance.
 	- v2.0
     * Join roll up and roll down operation into one.
     * Roll Up/Down: Implement ExpandableListView and using it to show result
@@ -34,7 +34,11 @@
 	- v3.0
     * Added 'Download from Server' option to allow user download the database online.
     * Some minor changes to logic and UI. 
-    -->
+	- v3.1
+    * Fixed Download from Server.
+    * Intent fixes.
+
+	-->
 
     <!-- Added Permission -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />

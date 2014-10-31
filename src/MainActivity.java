@@ -99,7 +99,7 @@ public class MainActivity extends Activity {
 				NetworkInfo netInfo = cm.getActiveNetworkInfo();
 
 				if (netInfo != null && netInfo.isConnected()) {
-					new readFromServer().execute("http://download1648.mediafire.com/0f27je35elvg/8pfl8h74184l4oj/Ikan.txt");
+					new readFromServer().execute("http://download659.mediafire.com/de3cokb41bjg/8pfl8h74184l4oj/Ikan.txt");
 				} else {
 					builderInternetAccess.setTitle("Warning").setMessage(
 							"No internet access!").setIcon(android.R.drawable.ic_dialog_alert).setNeutralButton(
@@ -241,7 +241,8 @@ public class MainActivity extends Activity {
 			dialog.dismiss();
 
 			Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+			/* this is not needed when finish() is called */
+			//intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			startActivity(intent);
 			finish();
 
